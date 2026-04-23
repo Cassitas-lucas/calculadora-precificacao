@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrecoBebidas — Precificação de Depósito</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE6;
+    --border: #E2DED6;
+    --text: #1A1815;
+    --text2: #6B6560;
+    --text3: #9E9990;
+    --accent: #1B4D3E;
+    --accent-light: #E8F0EC;
+    --amber: #C17B2A;
+    --amber-light: #FBF0E0;
+    --red: #C13333;
+    --red-light: #FBEAEA;
+    --green: #1B6B3A;
+    --green-light: #E8F5EE;
+    --yellow: #B07A00;
+    --yellow-light: #FFF8E6;
+    --r: 10px;
+    --r-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--accent);
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: #7ECAA8; }
+
+  /* TABS */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    position: sticky;
+    top: 56px;
+    z-index: 99;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text); background: var(--bg); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+
+  /* STAT CARDS */
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 16px 18px;
+  }
+  .stat-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); }
+  .stat-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+  .stat-card.danger .stat-value { color: var(--red); }
+  .stat-card.success .stat-value { color: var(--green); }
+  .stat-card.warning .stat-value { color: var(--amber); }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  input, select, textarea {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-light);
+  }
+  input[type=number] { -moz-appearance: textfield; }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  textarea { resize: vertical; min-height: 70px; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 9px 18px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #163E32; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn-danger { background: var(--red-light); color: var(--red); border-color: #F5C1C1; }
+  .btn-danger:hover { background: #F7CACA; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  /* BADGES / PILLS */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-gray { background: var(--surface2); color: var(--text2); }
+  .badge-accent { background: var(--accent-light); color: var(--accent); }
+
+  /* RESULT BOX */
+  .result-box {
+    background: var(--accent);
+    border-radius: var(--r);
+    padding: 20px;
+    color: #fff;
+  }
+  .result-main { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 700; }
+  .result-sub { font-size: 13px; opacity: 0.75; margin-top: 4px; }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .result-item label { font-size: 11px; opacity: 0.65; display: block; margin-bottom: 3px; }
+  .result-item span { font-size: 16px; font-weight: 600; }
+
+  /* CHANNEL TAGS */
+  .channel-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .channel-btn {
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .channel-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ARREDONDAMENTO */
+  .round-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .round-btn {
+    padding: 5px 12px;
+    border-radius: var(--r-sm);
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .round-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  /* SEARCH */
+  .search-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+  .search-row input { max-width: 260px; flex: 1; }
+  .search-row select { max-width: 180px; }
+
+  /* PROMO */
+  .promo-result {
+    border-radius: var(--r);
+    padding: 16px 20px;
+    margin-top: 12px;
+    border: 1px solid var(--border);
+  }
+  .promo-result.ok { background: var(--green-light); border-color: #B5DFC4; }
+  .promo-result.warn { background: var(--yellow-light); border-color: #F0D890; }
+  .promo-result.bad { background: var(--red-light); border-color: #F5C1C1; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 60px 16px 16px;
+    overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--r);
+    padding: 24px;
+    width: 100%;
+    max-width: 700px;
+    position: relative;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .modal-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text2);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+  /* TOP PRODUCTS */
+  .rank-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rank-item:last-child { border-bottom: none; }
+  .rank-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .rank-info { flex: 1; }
+  .rank-name { font-weight: 500; font-size: 13px; }
+  .rank-sub { font-size: 12px; color: var(--text3); }
+
+  /* COMPARAÇÃO */
+  .compare-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-name { flex: 1; min-width: 120px; font-weight: 500; font-size: 13px; }
+  .price-bar-wrap { flex: 2; min-width: 180px; }
+  .price-bar-bg { background: var(--bg); border-radius: 4px; height: 6px; position: relative; overflow: hidden; }
+  .price-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 40px 20px; color: var(--text3); }
+  .empty-icon { font-size: 32px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .section-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+
+  @media (max-width: 600px) {
+    main { padding: 16px 12px 80px; }
+    .result-main { font-size: 28px; }
+    th:nth-child(n+5), td:nth-child(n+5) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Preco<span>Bebidas</span></div>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);" onclick="openModal()">+ Produto</button>
+</header>
+
+<nav>
+  <div class="tab active" data-page="dashboard">Dashboard</div>
+  <div class="tab" data-page="produtos">Produtos</div>
+  <div class="tab" data-page="calculadora">Calculadora</div>
+  <div class="tab" data-page="comparacao">Comparação</div>
+  <div class="tab" data-page="promocao">Promoções</div>
+</nav>
+
+<main>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="section-title">Visão Geral</div>
+    <div class="section-sub" id="dash-date"></div>
+
+    <div class="grid-4" style="margin-bottom:16px;">
+      <div class="stat-card">
+        <div class="stat-label">Produtos</div>
+        <div class="stat-value" id="dash-total">0</div>
+        <div class="stat-sub">cadastrados</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-label">Margem Baixa</div>
+        <div class="stat-value" id="dash-low">0</div>
+        <div class="stat-sub">abaixo da meta</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-label">Atenção</div>
+        <div class="stat-value" id="dash-warn">0</div>
+        <div class="stat-sub">margem limite</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-label">Saudáveis</div>
+        <div class="stat-value" id="dash-ok">0</div>
+        <div class="stat-sub">dentro da meta</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Produtos mais rentáveis</div>
+        <div id="top-products"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Produtos que precisam de ajuste</div>
+        <div id="low-margin-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUTOS -->
+  <div class="page" id="page-produtos">
+    <div class="section-title">Produtos</div>
+    <div class="section-sub">Gerencie seu portfólio de bebidas</div>
+
+    <div class="card" style="padding:14px 20px;">
+      <div class="search-row">
+        <input type="text" id="search-input" placeholder="Buscar produto..." oninput="renderTable()">
+        <select id="filter-cat" onchange="renderTable()">
+          <option value="">Todas as categorias</option>
+          <option>Cerveja</option>
+          <option>Refrigerante</option>
+          <option>Água</option>
+          <option>Energético</option>
+          <option>Destilado</option>
+          <option>Gelo</option>
+          <option>Outros</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal()">+ Produto</button>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0;">
+      <div class="table-wrap">
+        <table id="products-table">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Custo Unit.</th>
+              <th>Preço Atual</th>
+              <th>Preço Sugerido</th>
+              <th>Margem Atual</th>
+              <th>Lucro Unit.</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALCULADORA -->
+  <div class="page" id="page-calculadora">
+    <div class="section-title">Calculadora de Preço</div>
+    <div class="section-sub">Preencha os campos e veja o preço ideal na hora</div>
+
+    <div class="grid-2" style="align-items:start;">
+      <!-- INPUTS -->
+      <div>
+        <div class="card">
+          <div class="card-title">Dados do produto</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Custo de compra (R$)</label>
+              <input type="number" id="calc-custo" placeholder="0,00" step="0.01" min="0" oninput="calcPreco()">
+            </div>
+            <div class="form-group">
+              <label>Preço de venda atual (R$)</label>
+              <input type="number" id="calc-preco-atual" placeholder="0,00" step="0.01" min="0" oninput="calcPreco()">
+            </div>
+            <div class="form-group">
+              <label>Impostos / outros custos (%)</label>
+              <input type="number" id="calc-imposto" placeholder="0" step="0.1" min="0" value="0" oninput="calcPreco()">
+            </div>
+            <div class="form-group">
+              <label>Taxa de entrega (%)</label>
+              <input type="number" id="calc-entrega" placeholder="0" step="0.1" min="0" value="0" oninput="calcPreco()">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Margem e markup desejados</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Margem desejada (%)</label>
+              <input type="number" id="calc-margem" placeholder="ex: 35" step="0.5" min="0" max="99" value="35" oninput="calcPreco()">
+            </div>
+            <div class="form-group">
+              <label>Markup desejado (%)</label>
+              <input type="number" id="calc-markup" placeholder="ex: 50" step="0.5" min="0" value="50" oninput="calcPreco()">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Arredondamento de preço</div>
+          <div class="round-row" id="round-options">
+            <button class="round-btn active" data-round="none">Sem arred.</button>
+            <button class="round-btn" data-round="int">Inteiro</button>
+            <button class="round-btn" data-round="90">.90</button>
+            <button class="round-btn" data-round="95">.95</button>
+            <button class="round-btn" data-round="99">.99</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Canal de venda</div>
+          <div class="channel-row" id="channel-options">
+            <button class="channel-btn active" data-channel="balcao">Balcão</button>
+            <button class="channel-btn" data-channel="delivery">Delivery</button>
+            <button class="channel-btn" data-channel="atacado">Atacado</button>
+          </div>
+          <div class="form-grid" style="margin-top:10px;">
+            <div class="form-group" id="channel-balcao-group">
+              <label>Acréscimo balcão (%)</label>
+              <input type="number" id="canal-balcao" value="0" step="0.5" oninput="calcPreco()">
+            </div>
+            <div class="form-group" id="channel-delivery-group" style="display:none;">
+              <label>Taxa delivery (%)</label>
+              <input type="number" id="canal-delivery" value="12" step="0.5" oninput="calcPreco()">
+            </div>
+            <div class="form-group" id="channel-atacado-group" style="display:none;">
+              <label>Desconto atacado (%)</label>
+              <input type="number" id="canal-atacado" value="10" step="0.5" oninput="calcPreco()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTADOS -->
+      <div>
+        <div class="result-box" id="result-box">
+          <div style="font-size:12px;opacity:0.7;margin-bottom:4px;">PREÇO SUGERIDO (MARGEM)</div>
+          <div class="result-main" id="res-preco-margem">R$ —</div>
+          <div class="result-sub" id="res-canal-label">Canal: Balcão</div>
+          <div class="result-grid">
+            <div class="result-item">
+              <label>Por markup</label>
+              <span id="res-preco-markup">R$ —</span>
+            </div>
+            <div class="result-item">
+              <label>Custo final</label>
+              <span id="res-custo-final">R$ —</span>
+            </div>
+            <div class="result-item">
+              <label>Lucro bruto</label>
+              <span id="res-lucro">R$ —</span>
+            </div>
+            <div class="result-item">
+              <label>Margem atual</label>
+              <span id="res-margem-atual">—</span>
+            </div>
+            <div class="result-item">
+              <label>Markup atual</label>
+              <span id="res-markup-atual">—</span>
+            </div>
+            <div class="result-item">
+              <label>Diferença</label>
+              <span id="res-diferenca">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">Comparativo de canais</div>
+          <table style="width:100%;">
+            <thead>
+              <tr>
+                <th>Canal</th>
+                <th>Preço (Margem)</th>
+                <th>Preço (Markup)</th>
+                <th>Lucro</th>
+              </tr>
+            </thead>
+            <tbody id="channel-compare-body"></tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin-top:0;">
+          <div class="card-title">Salvar produto calculado</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nome do produto</label>
+              <input type="text" id="calc-nome" placeholder="Ex: Cerveja Brahma Long Neck">
+            </div>
+            <div class="form-group">
+              <label>Categoria</label>
+              <select id="calc-cat">
+                <option>Cerveja</option>
+                <option>Refrigerante</option>
+                <option>Água</option>
+                <option>Energético</option>
+                <option>Destilado</option>
+                <option>Gelo</option>
+                <option>Outros</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn btn-primary" onclick="salvarDaCalculadora()">Salvar produto</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARAÇÃO -->
+  <div class="page" id="page-comparacao">
+    <div class="section-title">Preço Atual vs. Ideal</div>
+    <div class="section-sub">Compare onde você está e onde deveria estar</div>
+    <div class="card" id="compare-content"></div>
+  </div>
+
+  <!-- PROMOÇÕES -->
+  <div class="page" id="page-promocao">
+    <div class="section-title">Simulador de Promoções</div>
+    <div class="section-sub">Veja se um desconto ainda mantém sua margem</div>
+
+    <div class="grid-2" style="align-items:start;">
+      <div class="card">
+        <div class="card-title">Configurar promoção</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Selecione o produto</label>
+            <select id="promo-produto" onchange="calcPromo()">
+              <option value="">— selecione —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Desconto (%)</label>
+            <input type="number" id="promo-desconto" placeholder="ex: 15" step="0.5" min="0" max="100" value="10" oninput="calcPromo()">
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label>Ou preço promocional (R$)</label>
+            <input type="number" id="promo-preco-custom" placeholder="Deixe vazio para usar o % de desconto" step="0.01" min="0" oninput="calcPromo()">
+          </div>
+        </div>
+      </div>
+
+      <div id="promo-result-container">
+        <div class="card">
+          <div class="card-title">Resultado da promoção</div>
+          <div id="promo-result"><div class="empty"><div class="empty-icon">🏷️</div><div class="empty-text">Selecione um produto para simular</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL PRODUTO -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Novo Produto</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nome do produto *</label>
+        <input type="text" id="f-nome" placeholder="Ex: Cerveja Skol Lata 350ml">
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <select id="f-cat">
+          <option>Cerveja</option>
+          <option>Refrigerante</option>
+          <option>Água</option>
+          <option>Energético</option>
+          <option>Destilado</option>
+          <option>Gelo</option>
+          <option>Outros</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Marca</label>
+        <input type="text" id="f-marca" placeholder="Ex: Skol">
+      </div>
+      <div class="form-group">
+        <label>Fornecedor</label>
+        <input type="text" id="f-fornecedor" placeholder="Ex: Ambev">
+      </div>
+      <div class="form-group">
+        <label>Volume / Embalagem</label>
+        <input type="text" id="f-volume" placeholder="Ex: Lata 350ml, Caixa 24un">
+      </div>
+      <div class="form-group">
+        <label>Custo por unidade (R$) *</label>
+        <input type="number" id="f-custo" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Custo por caixa (R$)</label>
+        <input type="number" id="f-custo-cx" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Unidades por caixa</label>
+        <input type="number" id="f-un-cx" placeholder="Ex: 24" step="1" min="1">
+      </div>
+      <div class="form-group">
+        <label>Preço de venda atual (R$)</label>
+        <input type="number" id="f-preco" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Margem desejada (%)</label>
+        <input type="number" id="f-margem" placeholder="Ex: 35" step="0.5" min="0" max="99" value="35">
+      </div>
+      <div class="form-group">
+        <label>Markup desejado (%)</label>
+        <input type="number" id="f-markup" placeholder="Ex: 50" step="0.5" min="0" value="50">
+      </div>
+      <div class="form-group">
+        <label>Impostos/outros custos (%)</label>
+        <input type="number" id="f-imposto" placeholder="0" step="0.1" min="0" value="0">
+      </div>
+      <div class="form-group" style="grid-column:1/-1;">
+        <label>Observações</label>
+        <textarea id="f-obs" placeholder="Notas, condições especiais, etc."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarProduto()">Salvar produto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DADOS
+// ============================================================
+const INITIAL_PRODUCTS = [
+  { id: 1, nome: "Cerveja Skol Lata 350ml", cat: "Cerveja", marca: "Skol", fornecedor: "Ambev", volume: "Lata 350ml", custo: 2.10, custoCx: 50.40, unCx: 24, preco: 4.00, margem: 35, markup: 50, imposto: 0, obs: "" },
+  { id: 2, nome: "Cerveja Heineken Long Neck 330ml", cat: "Cerveja", marca: "Heineken", fornecedor: "Heineken BR", volume: "Long Neck 330ml", custo: 4.50, custoCx: 108, unCx: 24, preco: 8.50, margem: 40, markup: 70, imposto: 0, obs: "" },
+  { id: 3, nome: "Refrigerante Coca-Cola 2L", cat: "Refrigerante", marca: "Coca-Cola", fornecedor: "Coca-Cola FEMSA", volume: "Pet 2L", custo: 4.20, custoCx: 50.40, unCx: 12, preco: 6.50, margem: 35, markup: 55, imposto: 0, obs: "" },
+  { id: 4, nome: "Água Mineral Crystal 1,5L", cat: "Água", marca: "Crystal", fornecedor: "Nestlé Waters", volume: "Pet 1,5L", custo: 1.30, custoCx: 15.60, unCx: 12, preco: 2.80, margem: 40, markup: 65, imposto: 0, obs: "" },
+  { id: 5, nome: "Monster Energy 473ml", cat: "Energético", marca: "Monster", fornecedor: "Coca-Cola FEMSA", volume: "Lata 473ml", custo: 6.80, custoCx: 163.20, unCx: 24, preco: 9.90, margem: 30, markup: 45, imposto: 0, obs: "" },
+  { id: 6, nome: "Whisky Jack Daniel's 1L", cat: "Destilado", marca: "Jack Daniel's", fornecedor: "Diageo Brasil", volume: "Garrafa 1L", custo: 89.00, custoCx: 534, unCx: 6, preco: 149.90, margem: 40, markup: 68, imposto: 5, obs: "Alto giro em fim de semana" },
+  { id: 7, nome: "Gelo em Cubo 2kg", cat: "Gelo", marca: "Gelo Local", fornecedor: "Fabrica Local", volume: "Saco 2kg", custo: 2.50, custoCx: 0, unCx: 1, preco: 5.00, margem: 45, markup: 100, imposto: 0, obs: "" },
+];
+
+let products = [];
+let editingId = null;
+let currentRound = 'none';
+let currentChannel = 'balcao';
+
+function loadData() {
+  try {
+    const stored = localStorage.getItem('precobebs_v1');
+    if (stored) {
+      products = JSON.parse(stored);
+    } else {
+      products = INITIAL_PRODUCTS.map(p => ({ ...p }));
+      saveData();
+    }
+  } catch (e) {
+    products = INITIAL_PRODUCTS.map(p => ({ ...p }));
+  }
+}
+
+function saveData() {
+  try { localStorage.setItem('precobebs_v1', JSON.stringify(products)); } catch(e) {}
+}
+
+function nextId() {
+  return products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+}
+
+// ============================================================
+// CÁLCULOS
+// ============================================================
+function custoFinal(p) {
+  return p.custo * (1 + (p.imposto || 0) / 100);
+}
+
+function precoSugeridoMargem(custo, margem) {
+  if (margem >= 100) return custo * 10;
+  return custo / (1 - margem / 100);
+}
+
+function precoSugeridoMarkup(custo, markup) {
+  return custo * (1 + markup / 100);
+}
+
+function margemAtual(custo, preco) {
+  if (!preco || preco <= 0) return 0;
+  return ((preco - custo) / preco) * 100;
+}
+
+function markupAtual(custo, preco) {
+  if (!custo || custo <= 0) return 0;
+  return ((preco - custo) / custo) * 100;
+}
+
+function arredondar(val, modo) {
+  if (modo === 'none') return val;
+  if (modo === 'int') return Math.round(val);
+  const intPart = Math.floor(val);
+  const dec = parseFloat('0.' + modo);
+  const r = intPart + dec;
+  return r < val ? r + 1 : r;
+}
+
+function statusMargem(margAtual, margMeta) {
+  if (margAtual < margMeta * 0.8) return 'red';
+  if (margAtual < margMeta) return 'yellow';
+  return 'green';
+}
+
+function badgeMargem(margAtual, margMeta) {
+  const s = statusMargem(margAtual, margMeta);
+  const labels = { red: 'Baixa', yellow: 'Atenção', green: 'OK' };
+  const classes = { red: 'badge-red', yellow: 'badge-yellow', green: 'badge-green' };
+  return `<span class="badge ${classes[s]}">${labels[s]}</span>`;
+}
+
+function fmtBRL(v) {
+  if (isNaN(v) || v === null) return '—';
+  return 'R$ ' + v.toFixed(2).replace('.', ',');
+}
+
+function fmtPct(v) {
+  if (isNaN(v) || v === null) return '—';
+  return v.toFixed(1).replace('.', ',') + '%';
+}
+
+// ============================================================
+// TABS
+// ============================================================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+    if (tab.dataset.page === 'dashboard') renderDashboard();
+    if (tab.dataset.page === 'produtos') renderTable();
+    if (tab.dataset.page === 'comparacao') renderComparacao();
+    if (tab.dataset.page === 'promocao') renderPromoList();
+  });
+});
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const now = new Date();
+  document.getElementById('dash-date').textContent =
+    now.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  document.getElementById('dash-total').textContent = products.length;
+
+  let low = 0, warn = 0, ok = 0;
+  products.forEach(p => {
+    const cf = custoFinal(p);
+    const ma = margemAtual(cf, p.preco);
+    const s = statusMargem(ma, p.margem);
+    if (s === 'red') low++;
+    else if (s === 'yellow') warn++;
+    else ok++;
+  });
+  document.getElementById('dash-low').textContent = low;
+  document.getElementById('dash-warn').textContent = warn;
+  document.getElementById('dash-ok').textContent = ok;
+
+  // top rentáveis
+  const sorted = [...products].sort((a, b) => {
+    const la = (a.preco - custoFinal(a));
+    const lb = (b.preco - custoFinal(b));
+    const ma = margemAtual(custoFinal(a), a.preco);
+    const mb = margemAtual(custoFinal(b), b.preco);
+    return mb - ma;
+  });
+
+  const topEl = document.getElementById('top-products');
+  if (!products.length) {
+    topEl.innerHTML = '<div class="empty"><div class="empty-text">Nenhum produto cadastrado</div></div>';
+  } else {
+    topEl.innerHTML = sorted.slice(0, 5).map((p, i) => {
+      const cf = custoFinal(p);
+      const ma = margemAtual(cf, p.preco);
+      return `<div class="rank-item">
+        <div class="rank-num">${i + 1}</div>
+        <div class="rank-info">
+          <div class="rank-name">${p.nome}</div>
+          <div class="rank-sub">${p.cat} · Lucro: ${fmtBRL(p.preco - cf)}</div>
+        </div>
+        <span class="badge badge-green">${fmtPct(ma)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // baixa margem
+  const lowList = products.filter(p => statusMargem(margemAtual(custoFinal(p), p.preco), p.margem) !== 'green');
+  const lowEl = document.getElementById('low-margin-list');
+  if (!lowList.length) {
+    lowEl.innerHTML = '<div class="empty"><div class="empty-text" style="color:var(--green)">Todos os produtos estão dentro da meta!</div></div>';
+  } else {
+    lowEl.innerHTML = lowList.slice(0, 5).map(p => {
+      const cf = custoFinal(p);
+      const ma = margemAtual(cf, p.preco);
+      const s = statusMargem(ma, p.margem);
+      const bc = s === 'red' ? 'badge-red' : 'badge-yellow';
+      return `<div class="rank-item">
+        <div class="rank-num" style="background:var(--red-light);color:var(--red);">!</div>
+        <div class="rank-info">
+          <div class="rank-name">${p.nome}</div>
+          <div class="rank-sub">Meta: ${fmtPct(p.margem)} · Atual: ${fmtPct(ma)}</div>
+        </div>
+        <span class="badge ${bc}">${fmtPct(ma)}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ============================================================
+// TABELA
+// ============================================================
+function renderTable() {
+  const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const catFilter = document.getElementById('filter-cat')?.value || '';
+
+  const filtered = products.filter(p =>
+    (!search || p.nome.toLowerCase().includes(search) || (p.marca || '').toLowerCase().includes(search)) &&
+    (!catFilter || p.cat === catFilter)
+  );
+
+  const tbody = document.getElementById('table-body');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty"><div class="empty-text">Nenhum produto encontrado</div></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p => {
+    const cf = custoFinal(p);
+    const ma = margemAtual(cf, p.preco);
+    const ps = precoSugeridoMargem(cf, p.margem);
+    const lucro = p.preco - cf;
+    const badge = badgeMargem(ma, p.margem);
+    return `<tr>
+      <td>
+        <div style="font-weight:500;font-size:13px;">${p.nome}</div>
+        <div style="font-size:11px;color:var(--text3);">${p.volume || ''} ${p.marca ? '· ' + p.marca : ''}</div>
+      </td>
+      <td><span class="badge badge-gray">${p.cat}</span></td>
+      <td>${fmtBRL(cf)}</td>
+      <td style="font-weight:500;">${fmtBRL(p.preco)}</td>
+      <td style="color:var(--accent);font-weight:500;">${fmtBRL(arredondar(ps, 'none'))}</td>
+      <td>${fmtPct(ma)}</td>
+      <td>${fmtBRL(lucro)}</td>
+      <td>${badge}</td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-sm btn-secondary" onclick="editarProduto(${p.id})">Editar</button>
+          <button class="btn btn-sm btn-danger" onclick="excluirProduto(${p.id})">×</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// CALCULADORA
+// ============================================================
+document.querySelectorAll('#round-options .round-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#round-options .round-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRound = btn.dataset.round;
+    calcPreco();
+  });
+});
+
+document.querySelectorAll('#channel-options .channel-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#channel-options .channel-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentChannel = btn.dataset.channel;
+    ['balcao','delivery','atacado'].forEach(c => {
+      document.getElementById('channel-' + c + '-group').style.display = currentChannel === c ? '' : 'none';
+    });
+    calcPreco();
+  });
+});
+
+function canalAdj(base) {
+  let extra = 0;
+  if (currentChannel === 'delivery') {
+    extra = parseFloat(document.getElementById('canal-delivery').value) || 0;
+    return base * (1 + extra / 100);
+  }
+  if (currentChannel === 'atacado') {
+    extra = parseFloat(document.getElementById('canal-atacado').value) || 0;
+    return base * (1 - extra / 100);
+  }
+  extra = parseFloat(document.getElementById('canal-balcao').value) || 0;
+  return base * (1 + extra / 100);
+}
+
+function calcPreco() {
+  const custo = parseFloat(document.getElementById('calc-custo').value) || 0;
+  const precoAtual = parseFloat(document.getElementById('calc-preco-atual').value) || 0;
+  const imposto = parseFloat(document.getElementById('calc-imposto').value) || 0;
+  const entrega = parseFloat(document.getElementById('calc-entrega').value) || 0;
+  const margemD = parseFloat(document.getElementById('calc-margem').value) || 0;
+  const markupD = parseFloat(document.getElementById('calc-markup').value) || 0;
+
+  const cf = custo * (1 + (imposto + entrega) / 100);
+
+  let psMargem = cf > 0 ? precoSugeridoMargem(cf, margemD) : 0;
+  let psMarkup = cf > 0 ? precoSugeridoMarkup(cf, markupD) : 0;
+
+  psMargem = canalAdj(psMargem);
+  psMarkup = canalAdj(psMarkup);
+
+  psMargem = arredondar(psMargem, currentRound);
+  psMarkup = arredondar(psMarkup, currentRound);
+
+  const lucro = cf > 0 ? psMargem - cf : 0;
+  const ma = margemAtual(cf, precoAtual);
+  const mua = markupAtual(cf, precoAtual);
+  const diff = psMargem > 0 && precoAtual > 0 ? psMargem - precoAtual : null;
+
+  const channelLabels = { balcao: 'Balcão', delivery: 'Delivery', atacado: 'Atacado' };
+
+  document.getElementById('res-preco-margem').textContent = cf > 0 ? fmtBRL(psMargem) : 'R$ —';
+  document.getElementById('res-preco-markup').textContent = cf > 0 ? fmtBRL(psMarkup) : '—';
+  document.getElementById('res-custo-final').textContent = cf > 0 ? fmtBRL(cf) : '—';
+  document.getElementById('res-lucro').textContent = cf > 0 ? fmtBRL(lucro) : '—';
+  document.getElementById('res-margem-atual').textContent = (cf > 0 && precoAtual > 0) ? fmtPct(ma) : '—';
+  document.getElementById('res-markup-atual').textContent = (cf > 0 && precoAtual > 0) ? fmtPct(mua) : '—';
+  document.getElementById('res-canal-label').textContent = 'Canal: ' + channelLabels[currentChannel];
+
+  if (diff !== null) {
+    const sign = diff > 0 ? '+' : '';
+    document.getElementById('res-diferenca').textContent = sign + fmtBRL(diff);
+    document.getElementById('res-diferenca').style.color = diff > 0 ? '#7ECAA8' : '#FFB3B3';
+  } else {
+    document.getElementById('res-diferenca').textContent = '—';
+    document.getElementById('res-diferenca').style.color = '';
+  }
+
+  // Tabela de canais
+  const channels = [
+    { label: 'Balcão', id: 'balcao', sign: 1, field: 'canal-balcao' },
+    { label: 'Delivery', id: 'delivery', sign: 1, field: 'canal-delivery' },
+    { label: 'Atacado', id: 'atacado', sign: -1, field: 'canal-atacado' },
+  ];
+  const body = document.getElementById('channel-compare-body');
+  if (cf > 0) {
+    body.innerHTML = channels.map(ch => {
+      const pct = parseFloat(document.getElementById(ch.field).value) || 0;
+      const adj = ch.id === 'atacado' ? (1 - pct / 100) : (1 + pct / 100);
+      const pm = arredondar(precoSugeridoMargem(cf, margemD) * adj, currentRound);
+      const pu = arredondar(precoSugeridoMarkup(cf, markupD) * adj, currentRound);
+      const lc = pm - cf;
+      return `<tr>
+        <td><span class="badge badge-accent">${ch.label}</span></td>
+        <td style="font-weight:500;">${fmtBRL(pm)}</td>
+        <td>${fmtBRL(pu)}</td>
+        <td style="color:var(--green);font-weight:500;">${fmtBRL(lc)}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:12px;">Preencha o custo para ver</td></tr>';
+  }
+}
+
+function salvarDaCalculadora() {
+  const nome = document.getElementById('calc-nome').value.trim();
+  const custo = parseFloat(document.getElementById('calc-custo').value) || 0;
+  if (!nome) { alert('Preencha o nome do produto'); return; }
+  if (!custo) { alert('Preencha o custo do produto'); return; }
+  const cat = document.getElementById('calc-cat').value;
+  const preco = parseFloat(document.getElementById('calc-preco-atual').value) || 0;
+  const margem = parseFloat(document.getElementById('calc-margem').value) || 35;
+  const markup = parseFloat(document.getElementById('calc-markup').value) || 50;
+  const imposto = parseFloat(document.getElementById('calc-imposto').value) || 0;
+  products.push({ id: nextId(), nome, cat, marca: '', fornecedor: '', volume: '', custo, custoCx: 0, unCx: 1, preco, margem, markup, imposto, obs: '' });
+  saveData();
+  alert('Produto salvo com sucesso!');
+}
+
+// ============================================================
+// COMPARAÇÃO
+// ============================================================
+function renderComparacao() {
+  const el = document.getElementById('compare-content');
+  if (!products.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Nenhum produto cadastrado</div></div>';
+    return;
+  }
+  const maxPreco = Math.max(...products.map(p => Math.max(p.preco, precoSugeridoMargem(custoFinal(p), p.margem))));
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);padding:0 0 8px;border-bottom:1px solid var(--border);">
+      <span>Produto</span>
+      <span>Preço atual</span>
+      <span>Preço ideal</span>
+      <span>Diferença</span>
+    </div>
+    ${products.map(p => {
+      const cf = custoFinal(p);
+      const ideal = precoSugeridoMargem(cf, p.margem);
+      const diff = ideal - p.preco;
+      const pct = maxPreco > 0 ? (p.preco / maxPreco * 100) : 0;
+      const pctIdeal = maxPreco > 0 ? (ideal / maxPreco * 100) : 0;
+      const s = statusMargem(margemAtual(cf, p.preco), p.margem);
+      const barColor = s === 'red' ? 'var(--red)' : s === 'yellow' ? 'var(--amber)' : 'var(--green)';
+      const diffStr = diff > 0 ? `<span style="color:var(--amber);font-weight:500;">↑ ${fmtBRL(diff)}</span>` :
+        diff < 0 ? `<span style="color:var(--green);font-weight:500;">✓ ${fmtBRL(Math.abs(diff))}</span>` :
+        `<span style="color:var(--text3);">—</span>`;
+      return `<div class="compare-row">
+        <div class="compare-name">
+          <div>${p.nome}</div>
+          <div style="font-size:11px;color:var(--text3);">${p.cat}</div>
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:14px;">${fmtBRL(p.preco)}</div>
+          <div class="price-bar-bg" style="margin-top:5px;width:100px;">
+            <div class="price-bar-fill" style="width:${pct.toFixed(1)}%;background:var(--border);"></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:14px;color:var(--accent);">${fmtBRL(ideal)}</div>
+          <div class="price-bar-bg" style="margin-top:5px;width:100px;">
+            <div class="price-bar-fill" style="width:${pctIdeal.toFixed(1)}%;background:${barColor};"></div>
+          </div>
+        </div>
+        <div>${diffStr}</div>
+      </div>`;
+    }).join('')}
+  `;
+}
+
+// ============================================================
+// PROMOÇÃO
+// ============================================================
+function renderPromoList() {
+  const sel = document.getElementById('promo-produto');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— selecione —</option>' +
+    products.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+  if (current) sel.value = current;
+  calcPromo();
+}
+
+function calcPromo() {
+  const id = parseInt(document.getElementById('promo-produto').value);
+  const descPct = parseFloat(document.getElementById('promo-desconto').value) || 0;
+  const precoCustom = parseFloat(document.getElementById('promo-preco-custom').value) || 0;
+  const el = document.getElementById('promo-result');
+
+  if (!id) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🏷️</div><div class="empty-text">Selecione um produto para simular</div></div>';
+    return;
+  }
+
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+
+  const cf = custoFinal(p);
+  const precoPromo = precoCustom > 0 ? precoCustom : p.preco * (1 - descPct / 100);
+  const lucroPromo = precoPromo - cf;
+  const margemPromo = margemAtual(cf, precoPromo);
+  const lucroPerdido = (p.preco - precoPromo);
+  const ok = lucroPromo > 0;
+  const s = margemPromo >= p.margem * 0.8 ? 'ok' : margemPromo > 0 ? 'warn' : 'bad';
+  const icons = { ok: '✓', warn: '⚠', bad: '✗' };
+  const msgs = {
+    ok: 'Promoção viável — margem dentro do aceitável',
+    warn: 'Atenção — margem abaixo da meta, mas ainda lucrativo',
+    bad: lucroPromo <= 0 ? 'Preço abaixo do custo — prejuízo garantido!' : 'Margem crítica'
+  };
+
+  el.innerHTML = `
+    <div class="promo-result ${s}">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px;">${icons[s]} ${msgs[s]}</div>
+    </div>
+    <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="stat-card">
+        <div class="stat-label">Preço promocional</div>
+        <div class="stat-value">${fmtBRL(precoPromo)}</div>
+        <div class="stat-sub">Desconto: ${descPct > 0 ? fmtPct(descPct) : '—'}</div>
+      </div>
+      <div class="stat-card ${lucroPromo > 0 ? 'success' : 'danger'}">
+        <div class="stat-label">Lucro unitário</div>
+        <div class="stat-value">${fmtBRL(lucroPromo)}</div>
+        <div class="stat-sub">Margem: ${fmtPct(margemPromo)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Preço original</div>
+        <div class="stat-value">${fmtBRL(p.preco)}</div>
+        <div class="stat-sub">Margem: ${fmtPct(margemAtual(cf, p.preco))}</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-label">Receita perdida / un.</div>
+        <div class="stat-value">${fmtBRL(lucroPerdido)}</div>
+        <div class="stat-sub">vs. preço normal</div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(id) {
+  editingId = id || null;
+  document.getElementById('modal-title').textContent = id ? 'Editar Produto' : 'Novo Produto';
+  const fields = ['nome','cat','marca','fornecedor','volume','custo','custoCx','unCx','preco','margem','markup','imposto','obs'];
+  if (id) {
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('f-nome').value = p.nome || '';
+    document.getElementById('f-cat').value = p.cat || 'Cerveja';
+    document.getElementById('f-marca').value = p.marca || '';
+    document.getElementById('f-fornecedor').value = p.fornecedor || '';
+    document.getElementById('f-volume').value = p.volume || '';
+    document.getElementById('f-custo').value = p.custo || '';
+    document.getElementById('f-custo-cx').value = p.custoCx || '';
+    document.getElementById('f-un-cx').value = p.unCx || '';
+    document.getElementById('f-preco').value = p.preco || '';
+    document.getElementById('f-margem').value = p.margem || 35;
+    document.getElementById('f-markup').value = p.markup || 50;
+    document.getElementById('f-imposto').value = p.imposto || 0;
+    document.getElementById('f-obs').value = p.obs || '';
+  } else {
+    ['f-nome','f-marca','f-fornecedor','f-volume','f-custo','f-custo-cx','f-un-cx','f-preco','f-obs'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-margem').value = 35;
+    document.getElementById('f-markup').value = 50;
+    document.getElementById('f-imposto').value = 0;
+  }
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  editingId = null;
+}
+
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+
+function salvarProduto() {
+  const nome = document.getElementById('f-nome').value.trim();
+  const custo = parseFloat(document.getElementById('f-custo').value);
+  if (!nome) { alert('Informe o nome do produto'); return; }
+  if (isNaN(custo) || custo <= 0) { alert('Informe o custo do produto'); return; }
+
+  const data = {
+    nome,
+    cat: document.getElementById('f-cat').value,
+    marca: document.getElementById('f-marca').value.trim(),
+    fornecedor: document.getElementById('f-fornecedor').value.trim(),
+    volume: document.getElementById('f-volume').value.trim(),
+    custo,
+    custoCx: parseFloat(document.getElementById('f-custo-cx').value) || 0,
+    unCx: parseInt(document.getElementById('f-un-cx').value) || 1,
+    preco: parseFloat(document.getElementById('f-preco').value) || 0,
+    margem: parseFloat(document.getElementById('f-margem').value) || 35,
+    markup: parseFloat(document.getElementById('f-markup').value) || 50,
+    imposto: parseFloat(document.getElementById('f-imposto').value) || 0,
+    obs: document.getElementById('f-obs').value.trim(),
+  };
+
+  if (editingId) {
+    const idx = products.findIndex(p => p.id === editingId);
+    if (idx >= 0) products[idx] = { ...products[idx], ...data };
+  } else {
+    products.push({ id: nextId(), ...data });
+  }
+
+  saveData();
+  closeModal();
+  renderTable();
+  renderDashboard();
+  renderPromoList();
+}
+
+function editarProduto(id) {
+  openModal(id);
+}
+
+function excluirProduto(id) {
+  if (!confirm('Excluir este produto?')) return;
+  products = products.filter(p => p.id !== id);
+  saveData();
+  renderTable();
+  renderDashboard();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadData();
+renderDashboard();
+
+const d = new Date();
+document.getElementById('dash-date').textContent =
+  d.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+</script>
+</body>
+</html>
